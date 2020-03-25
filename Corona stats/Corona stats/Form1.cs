@@ -137,39 +137,38 @@ namespace Corona_stats
                // Landen.Add(land);
 
             }
-            //foreach (OneCountry country in Landen)
-            //{
+           foreach (OneCountry country in Landen)
+            {
 
-            //    tot = tot + country.getTimestamp() + Environment.NewLine;
-            //    tot = tot + "country:           " + country.country + Environment.NewLine;
-            //    tot = tot + "cases:             " + country.getCases() + Environment.NewLine;
-            //    tot = tot + "todaycases:        " + country.getTodayCases() + Environment.NewLine;
-            //    tot = tot + "deaths:            " + country.getDeaths() + Environment.NewLine;
-            //    tot = tot + "todaydeaths:       " + country.getTodayDeaths() + Environment.NewLine;
-            //    tot = tot + "recovered:         " + country.getRecoveries() + Environment.NewLine;
-            //    tot = tot + "active:            " + country.getActive() + Environment.NewLine;
-            //    tot = tot + "critical:          " + country.getCritical() + Environment.NewLine;
-            //    tot = tot + "cases per million: " + country.getCasesPerMillion() + Environment.NewLine;
-            //    tot = tot + Environment.NewLine;
-            //}
-            //for (int x = 1; x < 9; x++)
-            //{
-            //    chart1.Series["cases"].Points.AddXY(Landen[x].country, Landen[x].getCases());
-            //    chart1.Series["cases"].Points[x - 1].ToolTip = "" + Landen[x].country + Environment.NewLine + "cases: " + Landen[x].getCases() + Environment.NewLine + "recovered: " + Landen[x].getRecoveries();
-            //    //chart1.Series["cases"].Points[x - 1].Label = "" + Landen[x].getCases();
-            //    chart1.Series["recovered"].Points.AddXY(Landen[x].country, Landen[x].getRecoveries());
-            //    //chart1.Series["recovered"].Points[x - 1].Label= "" + Landen[x].getRecoveries();
-            //    chart1.Series["recovered"].Points[x - 1].ToolTip = "" + Landen[x].country + Environment.NewLine + "cases: " + Landen[x].getCases() + Environment.NewLine + "recovered: " + Landen[x].getRecoveries();
-            //}
+                tot = tot + country.getTimestamp() + Environment.NewLine;
+                tot = tot + "country:           " + country.country + Environment.NewLine;
+                tot = tot + "cases:             " + country.getCases() + Environment.NewLine;
+                tot = tot + "todaycases:        " + country.getTodayCases() + Environment.NewLine;
+                tot = tot + "deaths:            " + country.getDeaths() + Environment.NewLine;
+                tot = tot + "todaydeaths:       " + country.getTodayDeaths() + Environment.NewLine;
+                tot = tot + "recovered:         " + country.getRecoveries() + Environment.NewLine;
+                tot = tot + "active:            " + country.getActive() + Environment.NewLine;
+                tot = tot + "critical:          " + country.getCritical() + Environment.NewLine;
+                tot = tot + "cases per million: " + country.getCasesPerMillion() + Environment.NewLine;
+                tot = tot + Environment.NewLine;
+            }
+            for (int x = 1; x < 9; x++)
+            {
+                chart1.Series["cases"].Points.AddXY(Landen[x].country, Landen[x].getCases());
+                chart1.Series["cases"].Points[x - 1].ToolTip = "" + Landen[x].country + Environment.NewLine + "cases: " + Landen[x].getCases() + Environment.NewLine + "recovered: " + Landen[x].getRecoveries();
+                //chart1.Series["cases"].Points[x - 1].Label = "" + Landen[x].getCases();
+                chart1.Series["recovered"].Points.AddXY(Landen[x].country, Landen[x].getRecoveries());
+                //chart1.Series["recovered"].Points[x - 1].Label= "" + Landen[x].getRecoveries();
+                chart1.Series["recovered"].Points[x - 1].ToolTip = "" + Landen[x].country + Environment.NewLine + "cases: " + Landen[x].getCases() + Environment.NewLine + "recovered: " + Landen[x].getRecoveries();
+            }
 
-            //for (int x = 1; x < 8; x++)
-            //{
-            //    chart2.Series["cases"].Points.AddXY(Landen[x].country, Landen[x].getCasesPerMillion());
-            //    chart2.Series["cases"].Points[x - 1].ToolTip = "" + Landen[x].country + Environment.NewLine + "cases: " + Landen[x].getCases() + Environment.NewLine + "cases per million " + Landen[x].getCasesPerMillion();
-            //}
-            //textBox1.Text = tot;
+            for (int x = 1; x < 8; x++)
+            {
+                chart2.Series["cases"].Points.AddXY(Landen[x].country, Landen[x].getCasesPerMillion());
+                chart2.Series["cases"].Points[x - 1].ToolTip = "" + Landen[x].country + Environment.NewLine + "cases: " + Landen[x].getCases() + Environment.NewLine + "cases per million " + Landen[x].getCasesPerMillion();
+            }
+            textBox1.Text = tot;
         }
-
 
         }
     }
