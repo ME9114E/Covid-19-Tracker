@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace Corona_stats
         public int[] todayRecovered = new int[150];
         public int[] active = new int[150];
         public int[] critical = new int[150];
-        public int[] casesPerOneMillion = new int[150];
+        public double[] casesPerOneMillion = new double[150];
 
         public void addCases(int Cases)
             {
@@ -65,7 +65,7 @@ namespace Corona_stats
         {
            critical[index] = Critical; 
         }
-        public void addcasesPerOneMillion(int CasesPerOneMillion)
+        public void addcasesPerOneMillion(double CasesPerOneMillion)
         {
             casesPerOneMillion[index] = CasesPerOneMillion;
             index++;
@@ -87,17 +87,17 @@ namespace Corona_stats
             timestamp[index] = tmstmp;
         }
 
-        public int getCases() { return cases[index - 1]; }
-        public int getDeaths() { return deaths[index - 1]; }
-        public int getRecoveries() { return recovered[index - 1]; }
-        public int getFlag() { return flag[index - 1]; }
-        public int getTodayCases() { return todayCases[index - 1]; }
-        public int getTodayDeaths() { return todayDeaths[index - 1]; }
-        public int getTodayRecovered() { return todayRecovered[index - 1]; }
-        public int getCritical() { return critical[index - 1]; }
-        public int getActive() { return active[index - 1]; }
-        public int getCasesPerMillion() { return casesPerOneMillion[index - 1]; }
-        public DateTime getTimestamp() { return timestamp[index - 1]; }
+        public int getCases() { return cases[index]; }
+        public int getDeaths() { return deaths[index]; }
+        public int getRecoveries() { return recovered[index]; }
+        public int getFlag() { return flag[index]; }
+        public int getTodayCases() { return todayCases[index]; }
+        public int getTodayDeaths() { return todayDeaths[index]; }
+        public int getTodayRecovered() { return todayRecovered[index]; }
+        public int getCritical() { return critical[index]; }
+        public int getActive() { return active[index]; }
+        public double getCasesPerMillion() { return casesPerOneMillion[index]; }
+        public DateTime getTimestamp() { return timestamp[index]; }
     }
 
 
