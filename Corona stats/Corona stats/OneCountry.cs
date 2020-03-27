@@ -98,6 +98,8 @@ namespace Corona_stats
         public int getActive() { return active[index]; }
         public double getCasesPerMillion() { return casesPerOneMillion[index]; }
         public DateTime getTimestamp() { return timestamp[index]; }
+        public int getHighestCaseNumber() { return cases.Max();  }
+        public int getLowestCaseNumber() { return cases.Min(); }
     }
 
 
