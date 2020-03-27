@@ -19,6 +19,7 @@ namespace Corona_stats
     public partial class Form1 : Form
     {
         private string tot;
+        List<OneCountry> Landen = new List<OneCountry>();
 
         public Form1()
         {
@@ -46,7 +47,7 @@ namespace Corona_stats
             String csv = client2.DownloadString(url);
 
 
-            List<OneCountry> Landen = new List<OneCountry>();
+            
 
             string[] lines = csv.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
             lines = lines.Skip(1).ToArray();
@@ -98,7 +99,7 @@ namespace Corona_stats
             }
 
             //
-            // get information from corona.lmao.ninja
+            // get information from corona.lmao.ninja/countries
             //
             Boolean checkCountry = false;
 
@@ -110,7 +111,7 @@ namespace Corona_stats
                     {
                         foreach (OneCountry land2 in Landen)
                         {
-                            if (land2.country == ("" + entry.Value) && land2.provinceOrState=="") { land=land2; land.index++; land.addTimestamp(DateTime.UtcNow);  checkCountry = true; break; }
+                            if (land2.country == ("" + entry.Value) && land2.provinceOrState=="") {land =land2; land.index++; land.addTimestamp(DateTime.Today); checkCountry = true; break; }
                         }
                         if (!checkCountry)
                         { //country doesn't exist yet 
@@ -190,7 +191,7 @@ namespace Corona_stats
                         //no country doesn't exists
                         //make new OneCountry addcountry
                         land3 = new OneCountry();
-
+                        // add country and date
 
                     }
 
@@ -216,14 +217,27 @@ namespace Corona_stats
 
             //write json file
 
+            try
+            {
+                var jsonToWrite = JsonConvert.SerializeObject(Landen, Formatting.Indented);
+
+                using (var writer = new StreamWriter("COVID19.json"))
+                {
+                    writer.Write(jsonToWrite);
+                }
+            }
+            catch
+            {
+                //ignore
+            }
 
             // view   
-
+            Landen.Sort((x, y) => x.getHighestCaseNumber().CompareTo(y.getHighestCaseNumber()));
+           
             foreach (OneCountry country in Landen)
             {
                 // look for highest cases index
                 int maxvalue = country.cases.Max();
-                //int indexView = country.cases.ToList().IndexOf(maxvalue);
                 int indexView = Array.FindIndex(country.cases, element => element == maxvalue);
                 
                 country.index = indexView;
@@ -244,32 +258,95 @@ namespace Corona_stats
             {
                 chart1.Series["cases"].Points.AddXY(Landen[x].country, Landen[x].getCases());
                 chart1.Series["cases"].Points[x - 133].ToolTip = "" + Landen[x].country + Environment.NewLine + "cases: " + Landen[x].getCases() + Environment.NewLine + "recovered: " + Landen[x].getRecoveries();
-                //chart1.Series["cases"].Points[x - 1].Label = "" + Landen[x].getCases();
                 chart1.Series["recovered"].Points.AddXY(Landen[x].country, Landen[x].getRecoveries());
-                //chart1.Series["recovered"].Points[x - 1].Label= "" + Landen[x].getRecoveries();
                 chart1.Series["recovered"].Points[x - 133].ToolTip = "" + Landen[x].country + Environment.NewLine + "cases: " + Landen[x].getCases() + Environment.NewLine + "recovered: " + Landen[x].getRecoveries();
             }
 
             textBox1.Text = tot;
-            // startpoint cases closed to 150
+            
 
-
-            for (int indexview3 = 40; indexview3 < 64; indexview3++) 
+            foreach (OneCountry Land in Landen)
             {
-                int whichCountry = 23;
-                Landen[ whichCountry ].index = indexview3;
-                chart3.Series["Belgium active"].Points.AddXY(Landen[ whichCountry ].getTimestamp(), Landen[ whichCountry ].getTodayCases() );
-                chart3.Series["Belgium closed cases"].Points.AddXY(Landen[whichCountry].getTimestamp(), (Landen[whichCountry].getTodayRecovered() + Landen[whichCountry].getTodayDeaths() ) );
-                //chart3.Series["Belgium closed cases"].Points.AddXY(Landen[whichCountry].getTimestamp(), (Landen[whichCountry].getTodayCases() + Landen[whichCountry].getTodayDeaths()));
-                //chart3.Series["Belgium closed cases"].Points.AddXY(Landen[whichCountry].getTimestamp(), (Landen[whichCountry].getTodayCases() + Landen[whichCountry].getTodayDeaths()));
+                string item = Land.country;
+                if (Land.provinceOrState!="") { item = item + ", " + Land.provinceOrState; }
+
+                listBox1.Items.Add(item);
+                
             }
+            
+            if (listBox1.SelectedItem != null)
+            {
+                OneCountry chck1Country = Landen.Find(x => x.country.Equals(listBox1.SelectedItem));
+
+              
+                int targetNumber = 150;
+                // startpoint cases closed to 150
+                var nearest = chck1Country.cases.OrderBy(x => Math.Abs((long)x - targetNumber)).First();
+                int indexMin = Array.FindIndex(chck1Country.cases, element => element == nearest);
+
+                // endpoint cases=Max
+                int indexMax = Array.FindIndex(chck1Country.cases, element => element == chck1Country.cases.Max());
+
+                for (int indexview3 = indexMin; indexview3 < (indexMax+1); indexview3++) 
+                {
+
+                    chck1Country.index = indexview3;
+                    chart3.Series[chck1Country.country + "active"].Points.AddXY(chck1Country.getTimestamp(), chck1Country.getCases() );
+                    chart3.Series[chck1Country.country + "closed case"].Points.AddXY(chck1Country.getTimestamp(), (chck1Country.getTodayRecovered() + chck1Country.getTodayDeaths() ) );
+                }
+            }
+
+           
             
         }
 
-        
+        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            OneCountry chck1Country = new OneCountry();
 
+            if (listBox1.Text.Contains(","))
+            {
+                string[] state = listBox1.SelectedItem.ToString().Split(',');
+                state[1] = state[1].Substring(1);
+                chck1Country = Landen.Find(x => x.provinceOrState.Equals(state[1]));
+            }
+            else
+            {
+                chck1Country =Landen.Find(x => x.country.Equals(listBox1.SelectedItem));
+            }
+            
+            foreach (var series in chart3.Series)
+            {
+                series.Points.Clear();
+            }
+            chart3.Series.Clear();
 
+            chart3.Series.Add(chck1Country.country + " active");
+            chart3.Series.Add(chck1Country.country + " closed case");
+
+            chart3.Series[chck1Country.country + " active"].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            int targetNumber = 150;
+            
+            // startpoint cases closed to 150
+            var nearest = chck1Country.cases.OrderBy(x => Math.Abs((long)x - targetNumber)).First();
+           
+
+            int indexMin = Array.FindIndex(chck1Country.cases, element => element == nearest);
+            if (chck1Country.cases[indexMin] == 0) { indexMin = 0; } //startingcases were higher then 2 times targetnumber --> 0
+            // endpoint cases=Max
+            int indexMax = Array.FindIndex(chck1Country.cases, element => element == chck1Country.cases.Max());
+
+            for (int indexview3 = indexMin; indexview3 < (indexMax + 1); indexview3++)
+            {
+
+                chck1Country.index = indexview3;
+                chart3.Series[chck1Country.country + " active"].Points.AddXY(chck1Country.getTimestamp(), chck1Country.getCases());
+                chart3.Series[chck1Country.country + " closed case"].Points.AddXY(chck1Country.getTimestamp(), (chck1Country.getTodayRecovered() + chck1Country.getTodayDeaths()));
+                //chart3.Series["Belgium closed cases"].Points.AddXY(chck1Country.getTimestamp(), (chck1Country.getTodayCases() + chck1Country.getTodayDeaths()));
+                //chart3.Series["Belgium closed cases"].Points.AddXY(chck1Country.getTimestamp(), (chck1Country.getTodayCases() + chck1Country.getTodayDeaths()));
+            }
         }
+    }
     }
     
 
