@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Net.Http;
+using System.Globalization;
 
 namespace Corona_stats
 {
@@ -56,12 +57,12 @@ namespace Corona_stats
             foreach (string line in lines)
             {
                 string[] entries = line.Split(',');
-
-                // check country excists?
+                
+                // empty line?
                 if (line != "")
                 {
 
-
+                    // check country excists?
                     if (land.country == entries[1] && land.provinceOrState == entries[2])
                     {
                         // check date is used?
@@ -88,9 +89,9 @@ namespace Corona_stats
 
                     land.index = ind;
                     land.addTimestamp(date1);
-                    if (entries[5] != "") { land.addCases(Int32.Parse(entries[5])); }
-                    if (entries[6] != "") { land.addRecovered(Int32.Parse(entries[6])); }
-                    if (entries[7] != "") { land.addDeaths(Int32.Parse(entries[7])); }
+                    if (entries[entries.Length - 3] != "") { land.addCases(Int32.Parse(entries[entries.Length - 2])); }
+                    //if (entries[entries.Length - 2] != "") { land.addRecovered(Int32.Parse(entries[entries.Length - 2])); }
+                    if (entries[entries.Length - 1] != "") { land.addDeaths(Int32.Parse(entries[entries.Length - 1])); }
                     
 
                 }
@@ -109,7 +110,14 @@ namespace Corona_stats
                     {
                         foreach (OneCountry land2 in Landen)
                         {
-                            if (land2.country == "" + entry.Value && land2.provinceOrState=="") { land=land2; land.index++; land.addTimestamp(DateTime.UtcNow);  checkCountry = true; break; }
+                            if (land2.country == ("" + entry.Value) && land2.provinceOrState=="") { land=land2; land.index++; land.addTimestamp(DateTime.UtcNow);  checkCountry = true; break; }
+                        }
+                        if (!checkCountry)
+                        { //country doesn't exist yet 
+
+
+
+                          // Landen.Add(land);
                         }
                     }
                    
@@ -123,22 +131,102 @@ namespace Corona_stats
                         if (entry.Key.Equals("recovered") && entry.Value != null) { land.addRecovered(int.Parse("" + entry.Value)); }
                         if (entry.Key.Equals("active") && entry.Value != null) { land.addactive(int.Parse("" + entry.Value)); }
                         if (entry.Key.Equals("critical") && entry.Value != null) { land.addcritical(int.Parse("" + entry.Value)); }
-                        if (entry.Key.Equals("casesPerOneMillion") && entry.Value != null) { land.addcasesPerOneMillion(int.Parse("" + entry.Value)); }
+                        if (entry.Key.Equals("casesPerOneMillion") && entry.Value != null) { land.addcasesPerOneMillion(double.Parse("" + entry.Value)); }
                     }  
                                 
                 }
                 checkCountry = false;
                            //if (entry.Key.Equals("country") && entry.Value != null) { land.country = "" + entry.Value; }
                            
+            }
 
-                    
+            // read csv file and write over existing 
 
-                
-               // Landen.Add(land);
+            string filename = "ItalySpainBelgiumNetherlands.csv";
+            List<string> linesFile = File.ReadAllLines(filename).ToList();
+            linesFile.RemoveAt(0);
+
+            foreach (string line in linesFile)
+            {
+                string[] entries = line.Split(',');
+                // each line update in an existing OneCountry-instance 
+                // empty line?
+                if (line != "")
+                {
+                    // search country
+
+                    // loop trough Landen 
+                    OneCountry land3 = Landen.Find(x => x.country == entries[0]);
+                    // country exists? --> break
+                    // end loop
+
+                    // yess country exists
+                    if (land3.country != null)
+                    {
+                        // search date
+                        // loop trough country.timestamp[] 
+                        int index3 = Array.FindIndex(land3.timestamp, (element => element == DateTime.ParseExact(entries[1], "yyyy-MM-dd", null)));
+                        // date exists -->break
+                        // end loop
+
+                        // date exists
+                        if (index3 > 0)
+                        {
+                            // use the index from that country.timestamp
+                            land3.index = index3;
+                          
+                        }
+                        else
+                        {
+                            // date doesn't exist
+                            // use the last index; index++;
+                            index3 = Array.FindLast(land3.cases, (element => element > 0));
+
+                        }
+                       
+                    }
+                    else
+                    {
+                        //no country doesn't exists
+                        //make new OneCountry addcountry
+                        land3 = new OneCountry();
+
+
+                    }
+
+                    //fillup class properties  
+                    if (entries[2] != "") { land3.addCases(int.Parse("" + entries[2])); }// cases
+                    if (entries[3] != "") { land3.addDeaths(int.Parse("" + entries[3])); } // deaths
+                    if (entries[4] != "") { land3.addRecovered(int.Parse("" + entries[4])); } // recovered
+                    if (entries[5] != "") { land3.addtodayCases(int.Parse("" + entries[5])); } // todaycases
+                    if (entries[6] != "") { land3.addtodayDeaths(int.Parse("" + entries[6])); } // todaydeaths
+                    if (entries[7] != "") { land3.addtodayRecovered(int.Parse("" + entries[7])); } // today recoveries
+                    if (entries[8] != "") { land3.addactive(int.Parse("" + entries[8])); } // active
+                    if (entries[9] != "") { land3.addcritical(int.Parse("" + entries[9])); } // critical
+                    if (entries[10] != "") { land3.addcasesPerOneMillion(double.Parse("" + entries[10])); } //casesPerOneMillion
+                    // if addcountry --> Landen.add(addcountry)
+
+
+                }
+
+
+
 
             }
-           foreach (OneCountry country in Landen)
+
+            //write json file
+
+
+            // view   
+
+            foreach (OneCountry country in Landen)
             {
+                // look for highest cases index
+                int maxvalue = country.cases.Max();
+                //int indexView = country.cases.ToList().IndexOf(maxvalue);
+                int indexView = Array.FindIndex(country.cases, element => element == maxvalue);
+                
+                country.index = indexView;
 
                 tot = tot + country.getTimestamp() + Environment.NewLine;
                 tot = tot + "country:           " + country.country + Environment.NewLine;
@@ -152,24 +240,38 @@ namespace Corona_stats
                 tot = tot + "cases per million: " + country.getCasesPerMillion() + Environment.NewLine;
                 tot = tot + Environment.NewLine;
             }
-            for (int x = 1; x < 9; x++)
+            for (int x = 133; x < 142; x++)
             {
                 chart1.Series["cases"].Points.AddXY(Landen[x].country, Landen[x].getCases());
-                chart1.Series["cases"].Points[x - 1].ToolTip = "" + Landen[x].country + Environment.NewLine + "cases: " + Landen[x].getCases() + Environment.NewLine + "recovered: " + Landen[x].getRecoveries();
+                chart1.Series["cases"].Points[x - 133].ToolTip = "" + Landen[x].country + Environment.NewLine + "cases: " + Landen[x].getCases() + Environment.NewLine + "recovered: " + Landen[x].getRecoveries();
                 //chart1.Series["cases"].Points[x - 1].Label = "" + Landen[x].getCases();
                 chart1.Series["recovered"].Points.AddXY(Landen[x].country, Landen[x].getRecoveries());
                 //chart1.Series["recovered"].Points[x - 1].Label= "" + Landen[x].getRecoveries();
-                chart1.Series["recovered"].Points[x - 1].ToolTip = "" + Landen[x].country + Environment.NewLine + "cases: " + Landen[x].getCases() + Environment.NewLine + "recovered: " + Landen[x].getRecoveries();
+                chart1.Series["recovered"].Points[x - 133].ToolTip = "" + Landen[x].country + Environment.NewLine + "cases: " + Landen[x].getCases() + Environment.NewLine + "recovered: " + Landen[x].getRecoveries();
             }
 
-            for (int x = 1; x < 8; x++)
-            {
-                chart2.Series["cases"].Points.AddXY(Landen[x].country, Landen[x].getCasesPerMillion());
-                chart2.Series["cases"].Points[x - 1].ToolTip = "" + Landen[x].country + Environment.NewLine + "cases: " + Landen[x].getCases() + Environment.NewLine + "cases per million " + Landen[x].getCasesPerMillion();
-            }
             textBox1.Text = tot;
+            // startpoint cases closed to 150
+
+
+            for (int indexview3 = 40; indexview3 < 64; indexview3++) 
+            {
+                int whichCountry = 23;
+                Landen[ whichCountry ].index = indexview3;
+                chart3.Series["Belgium active"].Points.AddXY(Landen[ whichCountry ].getTimestamp(), Landen[ whichCountry ].getTodayCases() );
+                chart3.Series["Belgium closed cases"].Points.AddXY(Landen[whichCountry].getTimestamp(), (Landen[whichCountry].getTodayRecovered() + Landen[whichCountry].getTodayDeaths() ) );
+                //chart3.Series["Belgium closed cases"].Points.AddXY(Landen[whichCountry].getTimestamp(), (Landen[whichCountry].getTodayCases() + Landen[whichCountry].getTodayDeaths()));
+                //chart3.Series["Belgium closed cases"].Points.AddXY(Landen[whichCountry].getTimestamp(), (Landen[whichCountry].getTodayCases() + Landen[whichCountry].getTodayDeaths()));
+            }
+            
         }
+
+        
+
 
         }
     }
-   
+    
+
+    
+
